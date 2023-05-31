@@ -13,6 +13,7 @@ export default function Home() {
     const [showInfo, setShowInfo] = useState(false)
     const [preLoaded, setPreLoaded] = useState(false)
     const [imageData, setImageData] = useState([])
+    const [loadingMore, setLoadingMore] = useState(false)
     const [page, setPage] = useState(1)
     useEffect(() => {
         loadDataFromFile();
@@ -27,16 +28,7 @@ export default function Home() {
             const tempst = await tempData.json()
             // console.log(tempst.photos)
             let pre=tempst.photos.photo
-            // console.log(tempst.photos.photo.length)
-            // console.log(tempst.photos.photo.length())
-            // pre.forEach((photo,index) => {
-            //     console.log(photo.url_s)
-            //     FastImage.preload([
-            //         {
-            //             uri: photo.url_s,
-            //             // headers: { Authorization: 'someAuthToken' },
-            //         },])
-            // })
+          
             setImageData(tempst.photos.photo)
             SaveDataToFile(tempst.photos.photo)
             ToastAndroid.show("Succesfully Fetched Data",100)
@@ -52,7 +44,7 @@ export default function Home() {
 
     
     const fetchPageData = async () => {
-        // setRefreshStatus(true);
+        setLoadingMore(true);
         try {
             let k=page+1
             const tempData = await fetch(`https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&per_page=30&page=${k}&api_key=6f102c62f41998d151e5a1b48713cf13&format=json&nojsoncallback=1&extras=url_s`)
@@ -63,15 +55,14 @@ export default function Home() {
             console.log(tempst.photos)
             setImageData([...imageData,...tempst.photos.photo])
             SaveDataToFile([...imageData,...tempst.photos.photo])
-            ToastAndroid.show("Succesfully Loaded More Data",100)
+            // ToastAndroid.show("Succesfully Loaded More Data",100)
         }
         catch (e) {
             console.log(e)
             ToastAndroid.show("Failed to Fetch Data",100)
         }
         finally {
-            // setRefreshStatus(false)
-        }
+            setLoadingMore(false);        }
     };
 
     const SaveDataToFile = async (ff) => {
@@ -136,6 +127,11 @@ export default function Home() {
                     )
                 }}
             />
+            {loadingMore?
+            <Lottie source={require('../icons/more.json')}
+            style={{ alignSelf: 'center',
+             width:"90%", height: 100,padding:-30,backgroundColor:'transparent',flex:-1,marginBottom:-10,marginTop:-10}} autoPlay loop />:null}
+            
 
             <Modal
                 visible={showInfo}
