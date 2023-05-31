@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import ImageCard from '../components/ImageCard';
 import FastImage from 'react-native-fast-image'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Lottie from 'lottie-react-native';
 
 export default function Home() {
     const [refreshStatus, setRefreshStatus] = useState(false)
@@ -10,7 +11,9 @@ export default function Home() {
     const [ImageWidth, setImageWidth] = useState()
     const [ImageHeight, setImageHeight] = useState()
     const [showInfo, setShowInfo] = useState(false)
+    const [preLoaded, setPreLoaded] = useState(false)
     const [imageData, setImageData] = useState([])
+    const [page, setPage] = useState(1)
     useEffect(() => {
         loadDataFromFile();
         fetchData()
@@ -19,10 +22,21 @@ export default function Home() {
     const fetchData = async () => {
         setRefreshStatus(true);
         try {
-            const tempData = await fetch("https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&per_page=30&page=1&api_key=6f102c62f41998d151e5a1b48713cf13&format=json&nojsoncallback=1&extras=url_s")
-            console.log(tempData)
+            const tempData = await fetch(`https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&per_page=30&page=${1}&api_key=6f102c62f41998d151e5a1b48713cf13&format=json&nojsoncallback=1&extras=url_s`)
+            // console.log(tempData)
             const tempst = await tempData.json()
-            console.log(tempst.photos)
+            // console.log(tempst.photos)
+            let pre=tempst.photos.photo
+            // console.log(tempst.photos.photo.length)
+            // console.log(tempst.photos.photo.length())
+            // pre.forEach((photo,index) => {
+            //     console.log(photo.url_s)
+            //     FastImage.preload([
+            //         {
+            //             uri: photo.url_s,
+            //             // headers: { Authorization: 'someAuthToken' },
+            //         },])
+            // })
             setImageData(tempst.photos.photo)
             SaveDataToFile(tempst.photos.photo)
             ToastAndroid.show("Succesfully Fetched Data",100)
@@ -33,6 +47,30 @@ export default function Home() {
         }
         finally {
             setRefreshStatus(false)
+        }
+    };
+
+    
+    const fetchPageData = async () => {
+        // setRefreshStatus(true);
+        try {
+            let k=page+1
+            const tempData = await fetch(`https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&per_page=30&page=${k}&api_key=6f102c62f41998d151e5a1b48713cf13&format=json&nojsoncallback=1&extras=url_s`)
+            // page=page+1
+            setPage(page+1)
+            console.log(tempData)
+            const tempst = await tempData.json()
+            console.log(tempst.photos)
+            setImageData([...imageData,...tempst.photos.photo])
+            SaveDataToFile([...imageData,...tempst.photos.photo])
+            ToastAndroid.show("Succesfully Loaded More Data",100)
+        }
+        catch (e) {
+            console.log(e)
+            ToastAndroid.show("Failed to Fetch Data",100)
+        }
+        finally {
+            // setRefreshStatus(false)
         }
     };
 
@@ -69,6 +107,8 @@ export default function Home() {
                 style={{ alignContent: 'center', alignSelf: 'center' }}
                 contentContainerStyle={{ justifyContent: 'center' }}
                 showsVerticalScrollIndicator
+                onEndReached={()=>{fetchPageData()}}
+                
                 renderItem={(item) => {
                     // console.log(item.item.url_s)
                     return (
