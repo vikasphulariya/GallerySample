@@ -1,9 +1,10 @@
-import { View, Text, Modal, StyleSheet, FlatList, ToastAndroid, ScrollView, Dimensions, TouchableOpacity } from 'react-native'
+import { View, Text, Modal,TouchableWithoutFeedback, StyleSheet, FlatList, ToastAndroid, ScrollView, Dimensions, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ImageCard from '../components/ImageCard';
 import FastImage from 'react-native-fast-image'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Lottie from 'lottie-react-native';
+import Snackbar from 'react-native-snackbar';
 
 export default function Home() {
     const [refreshStatus, setRefreshStatus] = useState(false)
@@ -15,6 +16,7 @@ export default function Home() {
     const [imageData, setImageData] = useState([])
     const [loadingMore, setLoadingMore] = useState(false)
     const [page, setPage] = useState(1)
+    const [firstTimeLoaded, setfirstTimeLoaded] = useState(true)
     useEffect(() => {
         loadDataFromFile();
         fetchData()
@@ -35,10 +37,24 @@ export default function Home() {
         }
         catch (e) {
             console.log(e)
-            ToastAndroid.show("Failed to Fetch Data",100)
+            // ToastAndroid.show("Failed to Fetch Data",100)
+            Snackbar.show({
+                text: 'Network Request Failed',
+                duration: Snackbar.LENGTH_INDEFINITE,
+                marginBottom:10,
+                marginVertical:10,
+                borderRadius:10,
+                action: {
+                  text: 'Retry',
+                  textColor: 'green',
+                  onPress: () => {fetchData() },
+                  
+                },
+              });
         }
         finally {
             setRefreshStatus(false)
+            setfirstTimeLoaded(false) 
         }
     };
 
@@ -56,13 +72,31 @@ export default function Home() {
             setImageData([...imageData,...tempst.photos.photo])
             SaveDataToFile([...imageData,...tempst.photos.photo])
             // ToastAndroid.show("Succesfully Loaded More Data",100)
+            setPreLoaded(false)
         }
         catch (e) {
             console.log(e)
-            ToastAndroid.show("Failed to Fetch Data",100)
+            setPreLoaded(true)
+            // setfirstTimeLoaded
+            // ToastAndroid.show("Failed to Fetch Data",100)
+            
+            Snackbar.show({
+                text: 'Network Request Failed',
+                duration: Snackbar.LENGTH_INDEFINITE,
+                marginBottom:10,
+                marginVertical:10,
+                borderRadius:10,
+                action: {
+                  text: 'Retry',
+                  textColor: 'green',
+                  onPress: () => {fetchPageData() },
+                  
+                },
+              });
         }
         finally {
-            setLoadingMore(false);        }
+            setLoadingMore(false);      
+        setfirstTimeLoaded(false)  }
     };
 
     const SaveDataToFile = async (ff) => {
@@ -78,8 +112,16 @@ export default function Home() {
         try {
             // const stringifyImageData = JSON.stringify(ff);
             let temp = await AsyncStorage.getItem("ImageData")
-            setImageData(JSON.parse(temp))
-            console.log("Data Loaded Successfully")
+            if (temp!= null) {
+                setImageData(JSON.parse(temp))
+                console.log("Data Loaded Successfully")
+                setfirstTimeLoaded(false)
+            }
+            // setImageData(JSON.parse(temp))
+            else{
+
+                console.log("Data not Loaded Successfully")
+            }
         } catch (error) {
             console.log(error)
             ToastAndroid.show("Error loading Cached data",100)
@@ -88,7 +130,12 @@ export default function Home() {
 
     return (
         <View style={Styles.container}>
+{firstTimeLoaded?<View style={{ justifyContent: 'center', alignContent: 'center', alignItems: 'center', height: '70%' }}>
 
+<><Lottie source={require('../icons/Search.json')} 
+style={{ alignSelf: 'center', width: 200, height: undefined, aspectRatio: 1 }} autoPlay loop />
+    <Text style={Styles.TextInfo}>Searching Please be Paitient </Text></>
+</View>:
             <FlatList
                 refreshing={refreshStatus}
                 onRefresh={() => { fetchData() }}
@@ -98,15 +145,18 @@ export default function Home() {
                 style={{ alignContent: 'center', alignSelf: 'center' }}
                 contentContainerStyle={{ justifyContent: 'center' }}
                 showsVerticalScrollIndicator
-                onEndReached={()=>{fetchPageData()}}
-                
+                onEndReached={()=>{
+                    if(preLoaded==false){
+                        fetchPageData()
+                    }
+                }}
+                // onEndReachedThreshold={}
                 renderItem={(item) => {
                     // console.log(item.item.url_s)
                     return (
-                        <TouchableOpacity
+                        <TouchableOpacity 
                             onPressIn={() => {
                                 console.log("vikas")
-
                                 setImageUrl(item.item.url_s)
                                 setImageWidth(item.item.width_s)
                                 setImageHeight(item.item.height_s);
@@ -126,11 +176,11 @@ export default function Home() {
                         </TouchableOpacity>
                     )
                 }}
-            />
+            />}
             {loadingMore?
             <Lottie source={require('../icons/more.json')}
             style={{ alignSelf: 'center',
-             width:"90%", height: 100,padding:-30,backgroundColor:'transparent',flex:-1,marginBottom:-10,marginTop:-10}} autoPlay loop />:null}
+             width:"90%", height: 100,padding:-30,backgroundColor:'#00000000',flex:-1,marginBottom:-30,marginTop:-10}} autoPlay loop />:null}
             
 
             <Modal
@@ -140,14 +190,22 @@ export default function Home() {
                     // Alert.alert('Modal has been closed.');
                     setShowInfo(!showInfo);
                     //  console.log(ImageAspectRatio)
-                }}>
-                <View style={{ flex: 1, justifyContent: 'center' }}>
+                }}> 
+
+                    <TouchableWithoutFeedback onPress={()=>{
+                        console.log("ImageAspectRatio")
+                    }}>
+
+                <View style={{flex:1, justifyContent: 'center' }}>
+                   <TouchableWithoutFeedback onPress={() => { setShowInfo(false) }}>
+
+                   
                     <View style={Styles.InfoCard}>
 
                         <View style={Styles.InfoCardHeader}>
                             <Text style={Styles.InfoText}>Image Information</Text>
                             <Text onPress={() => { setShowInfo(false) }}
-                                style={[Styles.InfoText, { color: 'red' }]}>X</Text>
+                                style={[Styles.InfoText, { color: 'red',paddingHorizontal:10,paddingVertical:5 }]}>X</Text>
                         </View>
                         <ScrollView>
 
@@ -160,7 +218,9 @@ export default function Home() {
                             <Text style={[Styles.InfoText, { paddingHorizontal: 17, marginVertical: 7 }]} >Image height:{ImageHeight}</Text>
                         </ScrollView>
                     </View>
+                    </TouchableWithoutFeedback>
                 </View>
+                                </TouchableWithoutFeedback>
             </Modal>
 
         </View>
@@ -191,5 +251,10 @@ const Styles = StyleSheet.create({
     },
     InfoCard:{ margin: 30,
          backgroundColor: '#fff',
-          borderRadius: 15 }
+          borderRadius: 15 },
+          TextInfo: {
+            color: "black",
+            fontWeight: '600',
+            fontSize: 18
+        },
 })

@@ -1,9 +1,12 @@
-import { View, Text, Modal, TextInput, StyleSheet, FlatList, ToastAndroid, ScrollView, Dimensions, TouchableOpacity, Keyboard } from 'react-native'
+import { View, Text, Modal, TextInput, StyleSheet,TouchableWithoutFeedback, FlatList, ToastAndroid, ScrollView, Dimensions, TouchableOpacity, Keyboard } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ImageCard from '../components/ImageCard';
 import FastImage from 'react-native-fast-image'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Lottie from 'lottie-react-native';
+import Snackbar from 'react-native-snackbar';
+import { SnackBar } from 'react-native-simple-snackbar'
+// import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 // import Lottie from 'lottie-react-native';
 export default function Search() {
     const [refreshStatus, setRefreshStatus] = useState(false)
@@ -17,7 +20,7 @@ export default function Search() {
     const [Found, setFound] = useState(false)
     const [searching, setSearching] = useState(true)
     const [SearchPerformed, setSearchPerformed] = useState(false)
- 
+ const [snackShow, setsnackShow] = useState(false)
     const fetchData = async () => {
 
         setRefreshStatus(true);
@@ -38,8 +41,22 @@ export default function Search() {
         }
         catch (e) {
             console.log(e)
-            ToastAndroid.show("Failed to Fetch Data", 100)
+            // ToastAndroid.show("Failed to Fetch Data", 100)
+            Snackbar.show({
+                text: 'Network Request Failed',
+                duration: Snackbar.LENGTH_INDEFINITE,
+                marginBottom:10,
+                marginVertical:10,
+                borderRadius:10,
+                action: {
+                  text: 'Retry',
+                  textColor: 'green',
+                  onPress: () => {fetchData() },
+                  
+                },
+              });
             setFound(false)
+            // setsnackShow(true);
         }
         finally {
             setRefreshStatus(false)
@@ -57,7 +74,6 @@ export default function Search() {
                 width: '96%',
                 borderColor: '#c0c0c0',
                 borderWidth: 1,
-                //   padding:10,
                 margin: 10,
                 borderRadius: 10,
                 elevation: 30,
@@ -193,13 +209,18 @@ export default function Search() {
                     setShowInfo(!showInfo);
                     //  console.log(ImageAspectRatio)
                 }}>
+                    {/* <TouchableWithoutFeedback style={{flex:1,backgroundColor:'red',height:100,width:100}}> */}
+
+                    <TouchableWithoutFeedback onPress={()=>{setShowInfo(!showInfo);}} >
                 <View style={{ flex: 1, justifyContent: 'center' }}>
+<TouchableWithoutFeedback>
+
                     <View style={Styles.InfoCard}>
 
                         <View style={Styles.InfoCardHeader}>
                             <Text style={Styles.InfoText}>Image Information</Text>
                             <Text onPress={() => { setShowInfo(false) }}
-                                style={[Styles.InfoText, { color: 'red' }]}>X</Text>
+                                style={[Styles.InfoText, { color: 'red',paddingHorizontal:10,paddingVertical:5 }]}>X</Text>
                         </View>
                         <ScrollView>
 
@@ -207,13 +228,17 @@ export default function Search() {
                                 style={[Styles.FullImage, { aspectRatio: ImageWidth / ImageHeight, }]}
                                 source={{ uri: imageUrl }}
                                 resizeMode={FastImage.resizeMode.contain}
-                            />
+                                />
                             <Text style={[Styles.InfoText, { paddingHorizontal: 17, marginVertical: 7 }]} >Image width:{ImageWidth}</Text>
                             <Text style={[Styles.InfoText, { paddingHorizontal: 17, marginVertical: 7 }]} >Image height:{ImageHeight}</Text>
                         </ScrollView>
                     </View>
+                                </TouchableWithoutFeedback>
                 </View>
+                                </TouchableWithoutFeedback>
+                {/* </TouchableWithoutFeedback> */}
             </Modal>
+            
 
         </View>
     )

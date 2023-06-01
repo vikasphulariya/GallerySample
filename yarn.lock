@@ -6207,6 +6207,16 @@
     "react-freeze" "^1.0.0"
     "warn-once" "^0.1.0"
 
+"react-native-simple-snackbar@^1.1.1":
+  "integrity" "sha512-9FhP3ZQOej1fe3WxOizBPvjWRAQMbFevN9iYTY2WKKLaIlGdtGQTv5uDI1BxHRmK2O+Jj7GeISrycxAvBLNz5g=="
+  "resolved" "https://registry.npmjs.org/react-native-simple-snackbar/-/react-native-simple-snackbar-1.1.1.tgz"
+  "version" "1.1.1"
+
+"react-native-snackbar@^2.6.2":
+  "integrity" "sha512-edAubZJiBowwQUXJV5oXbMqitQ9vw7JzWUCczeTPVo6lRa+FzsUjiCQBHdWBbCw/N8/Q7jgKg4juNXU/bXZdXg=="
+  "resolved" "https://registry.npmjs.org/react-native-snackbar/-/react-native-snackbar-2.6.2.tgz"
+  "version" "2.6.2"
+
 "react-native-tab-view@^2.15.2":
   "integrity" "sha512-ac2DmT7+l13wzIFqtbfXn4wwfgtPoKzWjjZyrK1t+T8sdemuUvD4zIt+UImg03fu3s3VD8Wh/fBrIdcqQyZJWg=="
   "resolved" "https://registry.npmjs.org/react-native-tab-view/-/react-native-tab-view-2.16.0.tgz"
